@@ -19,6 +19,15 @@ const mitreColors: Record<string, string> = {
   'T1486': '#c0392b',
   'T1564': '#2980b9',
   'T1114': '#16a085',
+  'T1110': '#e74c3c',
+  'T1087': '#f39c12',
+  'T1530': '#0078d4',
+  'T1567': '#27ae60',
+  'T1213': '#f39c12',
+  'T1125': '#8888aa',
+  'T1048': '#e74c3c',
+  'T1098': '#9b59b6',
+  'T1528': '#e67e22',
 }
 
 const tacticLabels: Record<string, string> = {
@@ -31,6 +40,27 @@ const tacticLabels: Record<string, string> = {
   'T1486':     'Impact',
   'T1564.008': 'Defense Evasion',
   'T1114.002': 'Collection',
+  'T1114.003': 'Exfiltration',
+  'T1110.003': 'Credential Access',
+  'T1087.003': 'Discovery',
+  'T1530':     'Collection',
+  'T1567.002': 'Exfiltration',
+  'T1213':     'Collection',
+  'T1125':     'Collection',
+  'T1048.003': 'Exfiltration',
+  'T1098.001': 'Persistence',
+  'T1098.003': 'Privilege Escalation',
+  'T1528':     'Credential Access',
+}
+
+const statusOptions = ['New', 'Active', 'InProgress', 'Resolved', 'Closed']
+
+const statusColor: Record<string, string> = {
+  New: '#8888aa',
+  Active: '#0078d4',
+  InProgress: '#f39c12',
+  Resolved: '#27ae60',
+  Closed: '#555577',
 }
 
 export default function IncidentDetail() {
@@ -39,6 +69,9 @@ export default function IncidentDetail() {
   const [incident, setIncident] = useState<any>(null)
   const [alerts, setAlerts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [assignedTo, setAssignedTo] = useState('')
+  const [showAssign, setShowAssign] = useState(false)
 
   useEffect(() => {
     const fetchIncident = async () => {
@@ -46,8 +79,8 @@ export default function IncidentDetail() {
         const res = await fetch(`http://127.0.0.1:8000/api/v1/sentinel/incidents/${id}`)
         const data = await res.json()
         setIncident(data)
+        setAssignedTo(data.assignedTo || '')
 
-        // Fetch all alerts and filter to this incident's alert IDs
         const alertRes = await fetch('http://127.0.0.1:8000/api/v1/defender/alerts')
         const alertData = await alertRes.json()
         const filtered = alertData.alerts.filter((a: any) =>
@@ -62,6 +95,37 @@ export default function IncidentDetail() {
     }
     fetchIncident()
   }, [id])
+
+  const handleStatusChange = async (newStatus: string) => {
+    setUpdatingStatus(true)
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/v1/sentinel/incidents/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, assignedTo: assignedTo || null }),
+      })
+      const data = await res.json()
+      setIncident(data)
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
+
+  const handleAssign = async () => {
+    setUpdatingStatus(true)
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/v1/sentinel/incidents/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: incident.status, assignedTo: assignedTo }),
+      })
+      const data = await res.json()
+      setIncident(data)
+      setShowAssign(false)
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
 
   if (loading) return (
     <div style={{ padding: '32px', color: '#8888aa' }}>Loading...</div>
@@ -127,7 +191,7 @@ export default function IncidentDetail() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#8888aa' }}>
             <Tag size={12} />
-            Status: <span style={{ color: '#ffffff' }}>{incident.status}</span>
+            Assigned to: <span style={{ color: '#ffffff' }}>{incident.assignedTo || 'Unassigned'}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#8888aa' }}>
             <ShieldAlert size={12} />
@@ -135,8 +199,87 @@ export default function IncidentDetail() {
           </div>
         </div>
 
+        {/* Status Controls */}
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '12px', color: '#8888aa', marginBottom: '8px' }}>Status</div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {statusOptions.map(s => (
+              <button
+                key={s}
+                onClick={() => handleStatusChange(s)}
+                disabled={updatingStatus}
+                style={{
+                  background: incident.status === s ? `${statusColor[s]}33` : '#0f0f1a',
+                  color: incident.status === s ? statusColor[s] : '#8888aa',
+                  border: `1px solid ${incident.status === s ? statusColor[s] + '66' : '#2a2a4a'}`,
+                  borderRadius: '6px',
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  fontWeight: incident.status === s ? 700 : 400,
+                  cursor: updatingStatus ? 'not-allowed' : 'pointer',
+                }}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Assign */}
+        <div>
+          {showAssign ? (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={assignedTo}
+                onChange={e => setAssignedTo(e.target.value)}
+                placeholder="Enter analyst email..."
+                style={{
+                  background: '#0f0f1a',
+                  border: '1px solid #2a2a4a',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  outline: 'none',
+                  width: '240px',
+                }}
+              />
+              <button onClick={handleAssign} style={{
+                background: '#0078d4',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '6px 14px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}>Assign</button>
+              <button onClick={() => setShowAssign(false)} style={{
+                background: 'transparent',
+                color: '#8888aa',
+                border: '1px solid #2a2a4a',
+                borderRadius: '6px',
+                padding: '6px 14px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}>Cancel</button>
+            </div>
+          ) : (
+            <button onClick={() => setShowAssign(true)} style={{
+              background: 'transparent',
+              color: '#0078d4',
+              border: '1px solid #0078d444',
+              borderRadius: '6px',
+              padding: '6px 14px',
+              fontSize: '12px',
+              cursor: 'pointer',
+            }}>
+              {incident.assignedTo ? 'Reassign' : 'Assign to Analyst'}
+            </button>
+          )}
+        </div>
+
         {/* Description */}
-        <p style={{ fontSize: '13px', color: '#aaaacc', lineHeight: '1.6' }}>
+        <p style={{ fontSize: '13px', color: '#aaaacc', lineHeight: '1.6', marginTop: '16px' }}>
           {incident.description}
         </p>
       </div>
@@ -187,7 +330,7 @@ export default function IncidentDetail() {
           padding: '20px',
         }}>
           <h2 style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff', marginBottom: '16px' }}>
-            MITRE ATT&CK Techniques
+            MITRE ATT&amp;CK Techniques
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {incident.mitreAttackTechniques?.map((technique: string) => {
@@ -242,8 +385,6 @@ export default function IncidentDetail() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
           {alerts.map((alert, index) => (
             <div key={alert.id} style={{ display: 'flex', gap: '16px' }}>
-
-              {/* Timeline line */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
                 <div style={{
                   width: '12px',
@@ -264,11 +405,7 @@ export default function IncidentDetail() {
                 )}
               </div>
 
-              {/* Alert Content */}
-              <div style={{
-                flex: 1,
-                paddingBottom: index < alerts.length - 1 ? '16px' : '0',
-              }}>
+              <div style={{ flex: 1, paddingBottom: index < alerts.length - 1 ? '16px' : '0' }}>
                 <div style={{
                   background: '#0f0f1a',
                   border: '1px solid #2a2a4a',
@@ -301,7 +438,6 @@ export default function IncidentDetail() {
                   </div>
                 </div>
               </div>
-
             </div>
           ))}
 

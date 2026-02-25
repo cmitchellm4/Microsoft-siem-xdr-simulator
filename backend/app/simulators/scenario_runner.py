@@ -392,3 +392,21 @@ def start_scenario(scenario_id: str) -> dict:
     _incidents[incident_id] = incident
 
     return incident
+def update_incident_status(incident_id: str, status: str, assigned_to: str = None) -> dict:
+    """Update the status and assignee of an incident."""
+    incident = _incidents.get(incident_id)
+    if not incident:
+        raise ValueError(f"Incident '{incident_id}' not found")
+    incident["status"] = status
+    if assigned_to is not None:
+        incident["assignedTo"] = assigned_to
+    return incident
+
+
+def update_alert_status(alert_id: str, status: str) -> dict:
+    """Update the status of an alert."""
+    alert = _alerts.get(alert_id)
+    if not alert:
+        raise ValueError(f"Alert '{alert_id}' not found")
+    alert["status"] = status
+    return alert
