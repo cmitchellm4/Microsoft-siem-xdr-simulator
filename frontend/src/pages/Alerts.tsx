@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bell, RefreshCw } from 'lucide-react'
 
 const severityColor: Record<string, string> = {
@@ -13,6 +14,7 @@ export default function Alerts() {
   const [alerts, setAlerts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('All')
+  const navigate = useNavigate()
 
   const fetchAlerts = async () => {
     setLoading(true)
@@ -100,16 +102,22 @@ export default function Alerts() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {filtered.map(alert => (
-            <div key={alert.id} style={{
-              background: '#1a1a2e',
-              border: '1px solid #2a2a4a',
-              borderRadius: '8px',
-              padding: '16px 20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              cursor: 'pointer',
-            }}>
+            <div
+              key={alert.id}
+              onClick={() => navigate(`/alerts/${alert.id}`)}
+              style={{
+                background: '#1a1a2e',
+                border: '1px solid #2a2a4a',
+                borderRadius: '8px',
+                padding: '16px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#0078d4')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2a4a')}
+            >
               {/* Severity Bar */}
               <div style={{
                 width: '4px',
@@ -155,7 +163,6 @@ export default function Alerts() {
               }}>
                 {alert.status}
               </span>
-
             </div>
           ))}
         </div>
