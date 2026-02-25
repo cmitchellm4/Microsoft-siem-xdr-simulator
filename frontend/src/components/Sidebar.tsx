@@ -1,11 +1,12 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShieldAlert,
   Bell,
   Monitor,
   Terminal,
-  FlaskConical
+  FlaskConical,
+  LogOut,
 } from 'lucide-react'
 
 const navItems = [
@@ -18,6 +19,15 @@ const navItems = [
 ]
 
 export default function Sidebar() {
+  const navigate = useNavigate()
+  const userRaw = localStorage.getItem('siem_user')
+  const user = userRaw ? JSON.parse(userRaw) : null
+
+  const handleLogout = () => {
+    localStorage.removeItem('siem_user')
+    navigate('/login')
+  }
+
   return (
     <div style={{
       width: '220px',
@@ -79,14 +89,49 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
+      {/* User + Logout */}
       <div style={{
         padding: '16px',
         borderTop: '1px solid #2a2a4a',
-        fontSize: '11px',
-        color: '#555577',
       }}>
-        v0.1.0 — Training Only
+        {user && (
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>{user.email}</div>
+            <div style={{ fontSize: '11px', color: '#8888aa', marginTop: '2px' }}>
+              {user.role} • {user.level}
+            </div>
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          style={{
+            width: '100%',
+            background: 'transparent',
+            color: '#8888aa',
+            border: '1px solid #2a2a4a',
+            borderRadius: '6px',
+            padding: '7px 12px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = '#e74c3c'
+            e.currentTarget.style.borderColor = '#e74c3c44'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = '#8888aa'
+            e.currentTarget.style.borderColor = '#2a2a4a'
+          }}
+        >
+          <LogOut size={14} />
+          Sign out
+        </button>
+        <div style={{ fontSize: '11px', color: '#555577', marginTop: '10px' }}>
+          v0.1.0 — Training Only
+        </div>
       </div>
     </div>
   )
