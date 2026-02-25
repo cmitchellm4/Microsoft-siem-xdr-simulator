@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Clock, Target, CheckCircle, Loader, RotateCcw } from 'lucide-react'
+import LabQuestions from '../components/LabQuestions'
 
 const scenarios = [
   {
@@ -32,6 +33,7 @@ export default function Labs() {
   const [started, setStarted] = useState<Record<string, any>>({})
   const [error, setError] = useState<string | null>(null)
   const [resetSuccess, setResetSuccess] = useState(false)
+  const [activeScenario, setActiveScenario] = useState<string | null>(null)
 
   const handleStart = async (scenarioId: string) => {
     setLoading(scenarioId)
@@ -43,6 +45,7 @@ export default function Labs() {
       )
       const data = await response.json()
       setStarted(prev => ({ ...prev, [scenarioId]: data }))
+      setActiveScenario(scenarioId)
     } catch {
       setError('Could not connect to backend. Make sure the server is running.')
     } finally {
@@ -55,6 +58,7 @@ export default function Labs() {
       await fetch('http://127.0.0.1:8000/api/v1/labs/reset', { method: 'POST' })
       setStarted({})
       setError(null)
+      setActiveScenario(null)
       setResetSuccess(true)
       setTimeout(() => setResetSuccess(false), 3000)
     } catch {
@@ -145,7 +149,6 @@ export default function Labs() {
               gap: '12px',
             }}>
 
-              {/* Title & Difficulty */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff', flex: 1, marginRight: '12px' }}>
                   {scenario.name}
@@ -164,12 +167,10 @@ export default function Labs() {
                 </span>
               </div>
 
-              {/* Description */}
               <p style={{ fontSize: '12px', color: '#8888aa', lineHeight: '1.5' }}>
                 {scenario.description}
               </p>
 
-              {/* Tags */}
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {scenario.tags.map(tag => (
                   <span key={tag} style={{
@@ -183,7 +184,6 @@ export default function Labs() {
                 ))}
               </div>
 
-              {/* Success Message */}
               {isStarted && (
                 <div style={{
                   background: '#27ae6022',
@@ -201,7 +201,6 @@ export default function Labs() {
                 </div>
               )}
 
-              {/* Footer */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8888aa' }}>
                   <Clock size={12} />
@@ -232,6 +231,14 @@ export default function Labs() {
                   {isLoading ? 'Starting...' : isStarted ? 'Started' : 'Start Lab'}
                 </button>
               </div>
+
+              {/* Lab Questions Panel */}
+              {isStarted && activeScenario === scenario.id && (
+                <LabQuestions
+                  scenarioId={scenario.id}
+                  scenarioName={scenario.name}
+                />
+              )}
 
             </div>
           )
