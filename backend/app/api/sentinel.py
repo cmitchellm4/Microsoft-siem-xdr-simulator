@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from typing import Optional
 from app.simulators.kql_engine import KQLExecutor, TableRegistry
 from app.simulators.log_data import load_all_tables
+from app.simulators.scenario_runner import get_all_incidents, get_incident
 
 router = APIRouter()
 
@@ -20,16 +21,24 @@ async def list_incidents(
     limit: int = 50
 ):
     """Return list of Sentinel incidents."""
+    incidents = get_all_incidents()
+    if severity:
+        incidents = [i for i in incidents if i["severity"].lower() == severity.lower()]
+    if status:
+        incidents = [i for i in incidents if i["status"].lower() == status.lower()]
     return {
-        "incidents": [],
-        "total": 0
+        "incidents": incidents[:limit],
+        "total": len(incidents)
     }
 
 
 @router.get("/incidents/{incident_id}")
-async def get_incident(incident_id: str):
+async def get_incident_endpoint(incident_id: str):
     """Return a single incident by ID."""
-    raise HTTPException(status_code=404, detail="Incident not found")
+    incident = get_incident(incident_id)
+    if not incident:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return incident
 
 
 @router.post("/query/kql")

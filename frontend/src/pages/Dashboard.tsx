@@ -1,13 +1,45 @@
+import { useEffect, useState } from 'react'
 import { ShieldAlert, Bell, Monitor, FlaskConical } from 'lucide-react'
-
-const stats = [
-  { label: 'Active Incidents', value: '0', color: '#e74c3c', icon: ShieldAlert },
-  { label: 'Open Alerts', value: '0', color: '#f39c12', icon: Bell },
-  { label: 'Devices Monitored', value: '0', color: '#0078d4', icon: Monitor },
-  { label: 'Labs Available', value: '0', color: '#27ae60', icon: FlaskConical },
-]
+import { useNavigate } from 'react-router-dom'
 
 export default function Dashboard() {
+  const navigate = useNavigate()
+  const [counts, setCounts] = useState({
+    incidents: 0,
+    alerts: 0,
+    devices: 0,
+    labs: 2,
+  })
+
+  const fetchCounts = async () => {
+    try {
+      const [incRes, alertRes] = await Promise.all([
+        fetch('http://127.0.0.1:8000/api/v1/sentinel/incidents'),
+        fetch('http://127.0.0.1:8000/api/v1/defender/alerts'),
+      ])
+      const incData = await incRes.json()
+      const alertData = await alertRes.json()
+      setCounts(prev => ({
+        ...prev,
+        incidents: incData.total,
+        alerts: alertData.total,
+      }))
+    } catch {
+      // backend not reachable
+    }
+  }
+
+  useEffect(() => {
+    fetchCounts()
+  }, [])
+
+  const stats = [
+    { label: 'Active Incidents', value: counts.incidents, color: '#e74c3c', icon: ShieldAlert, path: '/incidents' },
+    { label: 'Open Alerts', value: counts.alerts, color: '#f39c12', icon: Bell, path: '/alerts' },
+    { label: 'Devices Monitored', value: counts.devices, color: '#0078d4', icon: Monitor, path: '/devices' },
+    { label: 'Labs Available', value: counts.labs, color: '#27ae60', icon: FlaskConical, path: '/labs' },
+  ]
+
   return (
     <div style={{ padding: '32px' }}>
 
@@ -28,16 +60,23 @@ export default function Dashboard() {
         gap: '16px',
         marginBottom: '32px',
       }}>
-        {stats.map(({ label, value, color, icon: Icon }) => (
-          <div key={label} style={{
-            background: '#1a1a2e',
-            border: '1px solid #2a2a4a',
-            borderRadius: '8px',
-            padding: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-          }}>
+        {stats.map(({ label, value, color, icon: Icon, path }) => (
+          <div key={label}
+            onClick={() => navigate(path)}
+            style={{
+              background: '#1a1a2e',
+              border: '1px solid #2a2a4a',
+              borderRadius: '8px',
+              padding: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              cursor: 'pointer',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = color)}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2a4a')}
+          >
             <div style={{
               width: '44px',
               height: '44px',

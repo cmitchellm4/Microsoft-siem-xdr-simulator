@@ -1,4 +1,5 @@
-import { FlaskConical, Clock, Target } from 'lucide-react'
+import { useState } from 'react'
+import { FlaskConical, Clock, Target, CheckCircle, Loader } from 'lucide-react'
 
 const scenarios = [
   {
@@ -27,6 +28,27 @@ const difficultyColor: Record<string, string> = {
 }
 
 export default function Labs() {
+  const [loading, setLoading] = useState<string | null>(null)
+  const [started, setStarted] = useState<Record<string, any>>({})
+  const [error, setError] = useState<string | null>(null)
+
+  const handleStart = async (scenarioId: string) => {
+    setLoading(scenarioId)
+    setError(null)
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/labs/scenarios/${scenarioId}/start`,
+        { method: 'POST' }
+      )
+      const data = await response.json()
+      setStarted(prev => ({ ...prev, [scenarioId]: data }))
+    } catch {
+      setError('Could not connect to backend. Make sure the server is running.')
+    } finally {
+      setLoading(null)
+    }
+  }
+
   return (
     <div style={{ padding: '32px' }}>
 
@@ -38,88 +60,130 @@ export default function Labs() {
         </p>
       </div>
 
+      {/* Error */}
+      {error && (
+        <div style={{
+          background: '#e74c3c22',
+          border: '1px solid #e74c3c',
+          borderRadius: '6px',
+          padding: '12px 16px',
+          fontSize: '13px',
+          color: '#e74c3c',
+          marginBottom: '16px',
+        }}>
+          {error}
+        </div>
+      )}
+
       {/* Scenario Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
-        {scenarios.map(scenario => (
-          <div key={scenario.id} style={{
-            background: '#1a1a2e',
-            border: '1px solid #2a2a4a',
-            borderRadius: '8px',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-          }}>
+        {scenarios.map(scenario => {
+          const result = started[scenario.id]
+          const isLoading = loading === scenario.id
+          const isStarted = !!result
 
-            {/* Title & Difficulty */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff', flex: 1, marginRight: '12px' }}>
-                {scenario.name}
-              </h3>
-              <span style={{
-                background: `${difficultyColor[scenario.difficulty]}22`,
-                color: difficultyColor[scenario.difficulty],
-                border: `1px solid ${difficultyColor[scenario.difficulty]}44`,
-                borderRadius: '20px',
-                padding: '2px 10px',
-                fontSize: '11px',
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-              }}>
-                {scenario.difficulty}
-              </span>
-            </div>
-
-            {/* Description */}
-            <p style={{ fontSize: '12px', color: '#8888aa', lineHeight: '1.5' }}>
-              {scenario.description}
-            </p>
-
-            {/* Tags */}
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {scenario.tags.map(tag => (
-                <span key={tag} style={{
-                  background: '#0f0f1a',
-                  border: '1px solid #2a2a4a',
-                  borderRadius: '4px',
-                  padding: '2px 8px',
-                  fontSize: '11px',
-                  color: '#8888aa',
-                }}>{tag}</span>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div style={{
+          return (
+            <div key={scenario.id} style={{
+              background: '#1a1a2e',
+              border: `1px solid ${isStarted ? '#27ae6044' : '#2a2a4a'}`,
+              borderRadius: '8px',
+              padding: '20px',
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginTop: '4px',
+              flexDirection: 'column',
+              gap: '12px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8888aa' }}>
-                <Clock size={12} />
-                ~{scenario.minutes} min
-              </div>
-              <button style={{
-                background: '#0078d4',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '6px 16px',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}>
-                <Target size={12} />
-                Start Lab
-              </button>
-            </div>
 
-          </div>
-        ))}
+              {/* Title & Difficulty */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff', flex: 1, marginRight: '12px' }}>
+                  {scenario.name}
+                </h3>
+                <span style={{
+                  background: `${difficultyColor[scenario.difficulty]}22`,
+                  color: difficultyColor[scenario.difficulty],
+                  border: `1px solid ${difficultyColor[scenario.difficulty]}44`,
+                  borderRadius: '20px',
+                  padding: '2px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                }}>
+                  {scenario.difficulty}
+                </span>
+              </div>
+
+              {/* Description */}
+              <p style={{ fontSize: '12px', color: '#8888aa', lineHeight: '1.5' }}>
+                {scenario.description}
+              </p>
+
+              {/* Tags */}
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {scenario.tags.map(tag => (
+                  <span key={tag} style={{
+                    background: '#0f0f1a',
+                    border: '1px solid #2a2a4a',
+                    borderRadius: '4px',
+                    padding: '2px 8px',
+                    fontSize: '11px',
+                    color: '#8888aa',
+                  }}>{tag}</span>
+                ))}
+              </div>
+
+              {/* Success Message */}
+              {isStarted && (
+                <div style={{
+                  background: '#27ae6022',
+                  border: '1px solid #27ae6044',
+                  borderRadius: '6px',
+                  padding: '10px 14px',
+                  fontSize: '12px',
+                  color: '#27ae60',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <CheckCircle size={14} />
+                  {result.message}
+                </div>
+              )}
+
+              {/* Footer */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: '4px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8888aa' }}>
+                  <Clock size={12} />
+                  ~{scenario.minutes} min
+                </div>
+                <button
+                  onClick={() => handleStart(scenario.id)}
+                  disabled={isLoading || isStarted}
+                  style={{
+                    background: isStarted ? '#27ae6033' : '#0078d4',
+                    color: isStarted ? '#27ae60' : '#ffffff',
+                    border: isStarted ? '1px solid #27ae6044' : 'none',
+                    borderRadius: '6px',
+                    padding: '6px 16px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: isLoading || isStarted ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}>
+                  {isLoading ? <Loader size={12} /> : isStarted ? <CheckCircle size={12} /> : <Target size={12} />}
+                  {isLoading ? 'Starting...' : isStarted ? 'Started' : 'Start Lab'}
+                </button>
+              </div>
+
+            </div>
+          )
+        })}
       </div>
 
     </div>
