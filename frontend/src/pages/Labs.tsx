@@ -12,12 +12,36 @@ const scenarios = [
     description: 'Investigate an account takeover via AiTM phishing leading to fraudulent wire transfer.',
   },
   {
+    id: 'password-spray-001',
+    name: 'Password Spray Attack',
+    difficulty: 'Beginner',
+    minutes: 20,
+    tags: ['Password Spray', 'M365', 'Initial Access'],
+    description: 'Investigate a password spray attack against Microsoft 365 that led to account compromise and email exfiltration.',
+  },
+  {
     id: 'ransomware-lockbit-001',
     name: 'LockBit Ransomware Campaign',
     difficulty: 'Intermediate',
     minutes: 30,
     tags: ['Ransomware', 'Lateral Movement', 'Credential Theft'],
     description: 'Track a full ransomware attack chain from phishing email to mass file encryption.',
+  },
+  {
+    id: 'insider-threat-001',
+    name: 'Insider Threat — Data Exfiltration',
+    difficulty: 'Intermediate',
+    minutes: 25,
+    tags: ['Insider Threat', 'DLP', 'Exfiltration'],
+    description: 'Investigate a departing employee conducting multi-channel data exfiltration before their last day.',
+  },
+  {
+    id: 'azure-ad-privilege-escalation-001',
+    name: 'Azure AD Privilege Escalation',
+    difficulty: 'Advanced',
+    minutes: 35,
+    tags: ['Azure AD', 'OAuth', 'Privilege Escalation'],
+    description: 'Hunt down an Illicit Consent Grant attack where a malicious OAuth app gained Global Administrator access.',
   },
 ]
 
