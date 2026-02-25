@@ -79,3 +79,13 @@ async def get_progress():
         "scenarios_run": 0,
         "skill_tracks": []
     }
+
+@router.post("/reset")
+async def reset_environment():
+    """Clear all incidents and alerts from the in-memory store."""
+    from app.simulators.scenario_runner import clear_all
+    clear_all()
+    return {
+        "status": "reset",
+        "message": "Environment reset. All incidents and alerts cleared."
+    }

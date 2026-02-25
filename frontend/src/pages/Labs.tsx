@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FlaskConical, Clock, Target, CheckCircle, Loader } from 'lucide-react'
+import { Clock, Target, CheckCircle, Loader, RotateCcw } from 'lucide-react'
 
 const scenarios = [
   {
@@ -31,6 +31,7 @@ export default function Labs() {
   const [loading, setLoading] = useState<string | null>(null)
   const [started, setStarted] = useState<Record<string, any>>({})
   const [error, setError] = useState<string | null>(null)
+  const [resetSuccess, setResetSuccess] = useState(false)
 
   const handleStart = async (scenarioId: string) => {
     setLoading(scenarioId)
@@ -49,16 +50,50 @@ export default function Labs() {
     }
   }
 
+  const handleReset = async () => {
+    try {
+      await fetch('http://127.0.0.1:8000/api/v1/labs/reset', { method: 'POST' })
+      setStarted({})
+      setError(null)
+      setResetSuccess(true)
+      setTimeout(() => setResetSuccess(false), 3000)
+    } catch {
+      setError('Could not connect to backend. Make sure the server is running.')
+    }
+  }
+
   return (
     <div style={{ padding: '32px' }}>
 
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#ffffff' }}>Labs & Scenarios</h1>
-        <p style={{ color: '#8888aa', marginTop: '6px', fontSize: '14px' }}>
-          Launch attack scenarios and complete guided labs to build your skills.
-        </p>
+      {/* Header */}
+      <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#ffffff' }}>Labs & Scenarios</h1>
+          <p style={{ color: '#8888aa', marginTop: '6px', fontSize: '14px' }}>
+            Launch attack scenarios and complete guided labs to build your skills.
+          </p>
+        </div>
+        <button
+          onClick={handleReset}
+          style={{
+            background: '#1a1a2e',
+            color: '#e74c3c',
+            border: '1px solid #e74c3c44',
+            borderRadius: '6px',
+            padding: '8px 16px',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}>
+          <RotateCcw size={14} />
+          Reset Environment
+        </button>
       </div>
 
+      {/* Error */}
       {error && (
         <div style={{
           background: '#e74c3c22',
@@ -73,6 +108,26 @@ export default function Labs() {
         </div>
       )}
 
+      {/* Reset Success */}
+      {resetSuccess && (
+        <div style={{
+          background: '#27ae6022',
+          border: '1px solid #27ae6044',
+          borderRadius: '6px',
+          padding: '12px 16px',
+          fontSize: '13px',
+          color: '#27ae60',
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <CheckCircle size={14} />
+          Environment reset successfully. All incidents and alerts cleared.
+        </div>
+      )}
+
+      {/* Scenario Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '16px' }}>
         {scenarios.map(scenario => {
           const result = started[scenario.id]
@@ -90,6 +145,7 @@ export default function Labs() {
               gap: '12px',
             }}>
 
+              {/* Title & Difficulty */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#ffffff', flex: 1, marginRight: '12px' }}>
                   {scenario.name}
@@ -108,10 +164,12 @@ export default function Labs() {
                 </span>
               </div>
 
+              {/* Description */}
               <p style={{ fontSize: '12px', color: '#8888aa', lineHeight: '1.5' }}>
                 {scenario.description}
               </p>
 
+              {/* Tags */}
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {scenario.tags.map(tag => (
                   <span key={tag} style={{
@@ -125,6 +183,7 @@ export default function Labs() {
                 ))}
               </div>
 
+              {/* Success Message */}
               {isStarted && (
                 <div style={{
                   background: '#27ae6022',
@@ -142,6 +201,7 @@ export default function Labs() {
                 </div>
               )}
 
+              {/* Footer */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#8888aa' }}>
                   <Clock size={12} />
