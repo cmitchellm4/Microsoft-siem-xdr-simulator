@@ -1,0 +1,218 @@
+id: "bec-invoice-fraud-001"
+name: "Business Email Compromise — Invoice Fraud"
+description: >
+  A threat actor compromises a finance employee's Microsoft 365 account
+  using a successful phishing attack. They then monitor the inbox,
+  intercept a vendor payment discussion, and redirect a wire transfer.
+  This scenario covers initial access via phishing, account takeover,
+  mailbox manipulation, and data exfiltration.
+version: "1.0.0"
+author: "msiem-xdr-simulator-team"
+
+difficulty: beginner
+estimated_minutes: 20
+tags:
+  - bec
+  - account-takeover
+  - phishing
+  - m365
+
+mitre_techniques:
+  - id: T1566.002
+    name: "Phishing: Spearphishing Link"
+    tactic: "Initial Access"
+  - id: T1078.004
+    name: "Valid Accounts: Cloud Accounts"
+    tactic: "Defense Evasion, Persistence, Privilege Escalation, Initial Access"
+  - id: T1114.002
+    name: "Email Collection: Remote Email Collection"
+    tactic: "Collection"
+  - id: T1537
+    name: "Transfer Data to Cloud Account"
+    tactic: "Exfiltration"
+
+environment:
+  org_name: "Fabrikam Inc"
+  domain: "fabrikam.com"
+  users:
+    - name: "Sarah Chen"
+      upn: "sarah.chen@fabrikam.com"
+      role: "Accounts Payable Manager"
+      device: "LAPTOP-AP-007"
+    - name: "James Rivera"
+      upn: "james.rivera@fabrikam.com"
+      role: "CFO"
+      device: "LAPTOP-EXEC-001"
+  devices:
+    - hostname: "LAPTOP-AP-007"
+      os: "Windows 11"
+      ip: "192.168.10.47"
+
+stages:
+  - name: "Initial Access — Phishing Link"
+    description: "Sarah receives a phishing email disguised as a DocuSign notification."
+    delay_minutes: 0
+
+    events:
+      - type: log
+        table: EmailEvents
+        delay_seconds: 0
+        data:
+          SenderFromAddress: "noreply@docusign-secure.net"
+          SenderDisplayName: "DocuSign eSignature"
+          RecipientEmailAddress: "sarah.chen@fabrikam.com"
+          Subject: "Please review and sign: Q4 Vendor Agreement"
+          UrlCount: 1
+          ThreatTypes: '["Phish"]'
+          DetectionMethods: '["URL detonation reputation"]'
+          DeliveryAction: "Delivered"
+          DeliveryLocation: "Inbox"
+
+      - type: alert
+        product: "Defender for Office 365"
+        delay_seconds: 120
+        data:
+          title: "Phishing email detected in user inbox"
+          severity: medium
+          category: "Phishing"
+          description: "A phishing email impersonating DocuSign was delivered to sarah.chen@fabrikam.com before detonation detection flagged the embedded URL."
+
+  - name: "Credential Theft — AiTM Phishing Page"
+    description: "Sarah clicks the link and is proxied through an Adversary-in-the-Middle (AiTM) phishing page that steals her session cookie."
+    delay_minutes: 12
+
+    events:
+      - type: log
+        table: SignInLogs
+        delay_seconds: 0
+        data:
+          UserPrincipalName: "sarah.chen@fabrikam.com"
+          AppDisplayName: "Microsoft Office"
+          IPAddress: "91.214.44.22"
+          Location: "Bucharest, Romania"
+          DeviceDetail: '{"operatingSystem": "Windows 10", "browser": "Chrome 128.0"}'
+          Status: '{"errorCode": 0, "failureReason": ""}'
+          ConditionalAccessStatus: "notApplied"
+          RiskLevelDuringSignIn: "none"
+          RiskLevelAggregated: "none"
+
+      - type: alert
+        product: "Defender for Identity"
+        delay_seconds: 30
+        data:
+          title: "Suspicious sign-in to cloud service from unusual location"
+          severity: medium
+          category: "InitialAccess"
+          description: "sarah.chen@fabrikam.com signed in from Romania (91.214.44.22) — a location not seen in the past 30 days."
+
+  - name: "Collection — Mailbox Reconnaissance"
+    description: "Attacker reads email history searching for payment discussions."
+    delay_minutes: 18
+
+    events:
+      - type: log
+        table: OfficeActivity
+        delay_seconds: 0
+        data:
+          UserId: "sarah.chen@fabrikam.com"
+          Operation: "MailItemsAccessed"
+          ClientIPAddress: "91.214.44.22"
+          MailboxOwnerUPN: "sarah.chen@fabrikam.com"
+          Folders: '[{"Path": "\\Inbox", "FolderItems": 47}]'
+
+      - type: log
+        table: OfficeActivity
+        delay_seconds: 60
+        data:
+          UserId: "sarah.chen@fabrikam.com"
+          Operation: "SearchQueryInitiatedExchange"
+          ClientIPAddress: "91.214.44.22"
+          SearchQuery: "wire transfer payment invoice vendor"
+
+  - name: "Persistence — Inbox Rule Created"
+    description: "Attacker creates an inbox rule to hide replies from the CFO and vendor."
+    delay_minutes: 25
+
+    events:
+      - type: log
+        table: OfficeActivity
+        delay_seconds: 0
+        data:
+          UserId: "sarah.chen@fabrikam.com"
+          Operation: "New-InboxRule"
+          ClientIPAddress: "91.214.44.22"
+          RuleName: "Auto-Archive"
+          RuleCondition: "From: james.rivera@fabrikam.com OR vendor@acme-supply.com"
+          RuleAction: "MoveToFolder: Deleted Items"
+
+      - type: alert
+        product: "Defender for Office 365"
+        delay_seconds: 10
+        data:
+          title: "Suspicious inbox rule created to redirect emails"
+          severity: high
+          category: "Persistence"
+          mitre_technique: "T1564.008"
+          description: "A new inbox rule 'Auto-Archive' was created by sarah.chen@fabrikam.com from an unusual IP that automatically deletes emails from the CFO and a known vendor."
+
+  - name: "Impact — Fraudulent Wire Transfer Request"
+    description: "Attacker sends a spoofed email to CFO requesting vendor payment redirect."
+    delay_minutes: 35
+
+    events:
+      - type: log
+        table: EmailEvents
+        delay_seconds: 0
+        data:
+          SenderFromAddress: "sarah.chen@fabrikam.com"
+          SenderIPv4: "91.214.44.22"
+          RecipientEmailAddress: "james.rivera@fabrikam.com"
+          Subject: "Urgent: Vendor payment details updated — please action today"
+          DeliveryAction: "Delivered"
+
+incident:
+  title: "Business Email Compromise — Fabrikam Finance Account Takeover"
+  severity: high
+  sentinel:
+    enabled: true
+  defender_xdr:
+    enabled: true
+
+lab:
+  id: "lab-bec-001"
+  title: "Investigate a Business Email Compromise (BEC) Attack"
+  skill_track: "incident-responder"
+  objectives:
+    - id: obj-1
+      text: "What country did the attacker sign in from?"
+      hint: "Check the SignInLogs for sarah.chen's activity around the time of the initial alert"
+      answer_type: text
+      correct: "Romania"
+      points: 10
+
+    - id: obj-2
+      text: "What attacker technique allowed them to bypass MFA?"
+      answer_type: multiple_choice
+      choices:
+        - "Brute force password attack"
+        - "Adversary-in-the-Middle (AiTM) session cookie theft"
+        - "SIM swapping"
+        - "MFA fatigue attack"
+      correct: "Adversary-in-the-Middle (AiTM) session cookie theft"
+      points: 15
+
+    - id: obj-3
+      text: "Write a KQL query to find all inbox rules created in the last 24 hours from IP addresses outside your organization."
+      hint: "Query OfficeActivity for Operation == 'New-InboxRule' and filter by ClientIPAddress"
+      answer_type: kql
+      validation:
+        tables_used: ["OfficeActivity"]
+        must_return_operation: "New-InboxRule"
+      points: 25
+
+    - id: obj-4
+      text: "What is the name of the suspicious inbox rule created by the attacker?"
+      hint: "Look at OfficeActivity for New-InboxRule operations"
+      answer_type: text
+      correct: "Auto-Archive"
+      points: 10
