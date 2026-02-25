@@ -40,3 +40,22 @@ async def submit_lab_answer(lab_id: str, body: dict):
     objective_id = body.get("objective_id")
     answer = body.get("answer")
     if not objective_id or not answer:
+        raise HTTPException(
+            status_code=400,
+            detail="objective_id and answer are required"
+        )
+    return {
+        "correct": False,
+        "points_awarded": 0,
+        "feedback": "Grading not yet implemented"
+    }
+
+@router.get("/progress")
+async def get_progress():
+    """Return current user progress and score."""
+    return {
+        "total_points": 0,
+        "labs_completed": 0,
+        "scenarios_run": 0,
+        "skill_tracks": []
+    }
