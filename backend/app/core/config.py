@@ -11,7 +11,11 @@ class Settings(BaseSettings):
 
     REDIS_URL: str = "redis://localhost:6379"
 
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
     SCENARIOS_PATH: str = "./scenarios"
     DATA_PATH: str = "./data"

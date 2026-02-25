@@ -9,7 +9,7 @@ const exampleQueries = [
 ]
 
 export default function KQLEditor() {
-  const [query, setQuery] = useState('// Write your KQL query here\nSignInLogs\n| take 10')
+  const [query, setQuery] = useState('SignInLogs\n| take 10')
   const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
