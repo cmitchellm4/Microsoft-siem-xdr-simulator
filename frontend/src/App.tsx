@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
 import Incidents from './pages/Incidents'
+import IncidentDetail from './pages/IncidentDetail'
 import Alerts from './pages/Alerts'
 import Devices from './pages/Devices'
 import KQLEditor from './pages/KQLEditor'
@@ -15,6 +16,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/incidents" element={<Incidents />} />
+          <Route path="/incidents/:id" element={<IncidentDetail />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/devices" element={<Devices />} />
           <Route path="/kql" element={<KQLEditor />} />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ShieldAlert, RefreshCw } from 'lucide-react'
 
 const severityColor: Record<string, string> = {
@@ -13,6 +14,8 @@ export default function Incidents() {
   const [incidents, setIncidents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('All')
+  const navigate = useNavigate()
+
 
   const fetchIncidents = async () => {
     setLoading(true)
@@ -100,7 +103,9 @@ export default function Incidents() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {filtered.map(incident => (
-            <div key={incident.id} style={{
+            <div key={incident.id}
+              onClick={() => navigate(`/incidents/${incident.id}`)}
+              style={{
               background: '#1a1a2e',
               border: '1px solid #2a2a4a',
               borderRadius: '8px',
