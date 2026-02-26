@@ -1,182 +1,139 @@
 # 🛡️ Microsoft SIEM & XDR Simulator
 
-> A free, open-source training environment that simulates Microsoft Sentinel and Microsoft Defender XDR — built for aspiring cybersecurity professionals to practice real-world skills without an Azure subscription.
+An open-source, browser-based training simulator for Microsoft Sentinel and Microsoft Defender XDR. Built for aspiring SOC analysts, SC-200 candidates, and cybersecurity students who want hands-on experience without needing a live Microsoft 365 tenant.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Status](https://img.shields.io/badge/status-active%20development-orange)
-![Stack](https://img.shields.io/badge/stack-Python%20%7C%20React%20%7C%20Docker-informational)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Python](https://img.shields.io/badge/python-3.10+-green)
+![React](https://img.shields.io/badge/react-18-blue)
+![FastAPI](https://img.shields.io/badge/fastapi-0.100+-green)
 
 ---
 
-## 🎯 What Is This?
+## 📸 Screenshots
 
-The **Microsoft SIEM & XDR Simulator** is a locally-hosted training platform that faithfully recreates the Microsoft Sentinel and Defender XDR experience. It's designed for:
+### Login Page
+![Login](docs/screenshots/login.png)
 
-- 🎓 Students preparing for **SC-200**, **AZ-500**, or **MS-500** certifications
-- 🔍 Junior SOC analysts building **threat detection and triage** skills
-- 🧪 Security engineers learning **KQL (Kusto Query Language)**
-- 🧑‍🏫 Instructors who need a **hands-on lab environment** without cloud costs
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
 
-No Azure subscription required. Spin it up in minutes with Docker.
+### Incident Queue
+![Incidents](docs/screenshots/incidents.png)
+
+### Incident Detail — MITRE ATT&CK Timeline
+![Incident Detail](docs/screenshots/incident-detail.png)
+
+### KQL Editor
+![KQL Editor](docs/screenshots/kql-editor.png)
+
+### Labs & Scenarios
+![Labs](docs/screenshots/labs.png)
 
 ---
 
 ## ✨ Features
 
-### 🖥️ Microsoft Sentinel Simulator
-- Realistic **Incident Queue** with severity, status, and assignment workflows
-- Interactive **KQL Query Editor** backed by synthetic log data
-- **Workbook dashboards** for threat visibility
-- **Analytics Rule builder** — create detection rules and watch them fire
-- Log data covering: Azure Activity, AAD Sign-in, Syslog, SecurityEvent, and more
+- 🔐 **Realistic login page** with role-based demo accounts (L1 Analyst, L2 Senior, Admin)
+- 📋 **Incident queue** — triage, filter by severity, assign to analysts, update status
+- 🔔 **Alert queue** — Defender XDR-style alerts with MITRE techniques and remediation steps
+- 🖥️ **Device inventory** — Defender for Endpoint device list with risk levels and active alert counts
+- 🔍 **KQL Editor** — write and run real KQL queries against 910 rows of synthetic log data across 8 tables
+- 🏆 **KQL Challenges** — 6 guided exercises with hints, validation, and scoring
+- 🎯 **5 attack scenarios** — each generates real alerts and incidents with MITRE ATT&CK mappings
+- ❓ **Guided lab questions** — answer questions about each scenario to earn points
+- 🔄 **Environment reset** — clear all data and start fresh with one click
 
-### 🔐 Microsoft Defender XDR Simulator
-- **Alerts & Incidents** view across Defender for Endpoint, Identity, Office 365, and Cloud Apps
-- **Device inventory** with simulated vulnerability and exposure data
-- **Advanced Hunting** with KQL support
-- **Threat & Vulnerability Management** dashboard
-- **Email threat explorer** (Defender for Office 365)
+---
 
-### 🎮 Attack Scenario Engine
-- Pre-built attack chains mapped to **MITRE ATT&CK**
-- Scenarios covering: BEC, ransomware, lateral movement, credential harvesting, insider threat
-- Scenarios inject realistic telemetry across Sentinel and Defender simultaneously
-- **Difficulty levels**: Beginner → Intermediate → Advanced
+## 🎯 Attack Scenarios
 
-### 📚 Guided Labs & Skill Tracks
-- Step-by-step walkthroughs with hints
-- **Scoring and progress tracking** per user
-- Skill tracks: SOC Analyst L1, Threat Hunter, Incident Responder, KQL Master
-- Lab completion certificates (exportable)
+| Scenario | Difficulty | Alerts | MITRE Techniques |
+|----------|-----------|--------|-----------------|
+| Business Email Compromise — Invoice Fraud | Beginner | 4 | T1566.002, T1078.004, T1114.002, T1564.008 |
+| Password Spray Attack | Beginner | 4 | T1110.003, T1078.004, T1087.003, T1114.003 |
+| LockBit Ransomware Campaign | Intermediate | 5 | T1566.001, T1059.001, T1003.001, T1550.002, T1486 |
+| Insider Threat — Data Exfiltration | Intermediate | 5 | T1530, T1567.002, T1213, T1125, T1048.003 |
+| Azure AD Privilege Escalation | Advanced | 5 | T1098.001, T1098.003, T1528, T1114.002 |
 
-### ⚙️ Additional Tools (Roadmap)
-- Microsoft Entra ID (Azure AD) simulation
-- Microsoft Purview Compliance portal
-- Microsoft Defender for Cloud (CSPM)
+---
+
+## 📊 KQL Log Tables
+
+| Table | Rows | Description |
+|-------|------|-------------|
+| SignInLogs | 100 | Azure AD sign-in events |
+| SecurityEvent | 150 | Windows Security Event logs |
+| DeviceProcessEvents | 200 | Process execution events |
+| DeviceNetworkEvents | 150 | Network connection events |
+| DeviceLogonEvents | 100 | Device logon events |
+| EmailEvents | 80 | Email delivery events |
+| OfficeActivity | 100 | Microsoft 365 activity logs |
+| SecurityAlert | 30 | Security alerts |
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
-- 4GB RAM minimum (8GB recommended)
-- Modern browser (Chrome, Edge, Firefox)
+- Python 3.10+
+- Node.js 18+
 
-### Run in 3 commands
-
+### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/msiem-xdr-simulator.git
-cd msiem-xdr-simulator
-docker compose up
+git clone https://github.com/cmitchellm4/Microsoft-siem-xdr-simulator.git
+cd Microsoft-siem-xdr-simulator
 ```
 
-Then open your browser to: **http://localhost:3000**
-
-Default credentials: `admin / simulator123`
-
----
-
-## 🗺️ Project Roadmap
-
-| Phase | Status | Description |
-|-------|--------|-------------|
-| **Phase 1** | 🔨 In Progress | Core Sentinel UI — Incident queue, basic KQL engine, 5 starter scenarios |
-| **Phase 2** | 📋 Planned | Defender XDR UI — Alerts, devices, advanced hunting |
-| **Phase 3** | 📋 Planned | Scenario engine v2 — Dynamic attack injection, multi-stage campaigns |
-| **Phase 4** | 📋 Planned | Guided labs, scoring engine, skill tracks |
-| **Phase 5** | 💡 Future | Entra ID sim, Purview, Defender for Cloud |
-
----
-
-## 🏗️ Architecture
-
-```
-msiem-xdr-simulator/
-├── backend/                  # Python / FastAPI
-│   └── app/
-│       ├── api/              # REST endpoints (Sentinel, Defender, Auth)
-│       ├── core/             # Config, security, database
-│       ├── models/           # SQLAlchemy ORM models
-│       ├── services/         # Business logic
-│       └── simulators/       # KQL engine, log generator, alert engine
-├── frontend/                 # React / TypeScript
-│   └── src/
-│       ├── components/       # UI components (portal-style)
-│       ├── pages/            # Sentinel, Defender, Lab pages
-│       ├── hooks/            # Custom React hooks
-│       ├── store/            # Redux/Zustand state
-│       └── types/            # TypeScript interfaces
-├── scenarios/                # YAML-defined attack scenarios
-│   ├── sentinel/
-│   ├── defender/
-│   └── shared/
-├── data/                     # Synthetic log datasets
-│   ├── logs/
-│   ├── alerts/
-│   └── incidents/
-└── docker/                   # Dockerfiles and compose config
-```
-
-**Tech Stack:**
-
-| Layer | Technology | Reason |
-|-------|-----------|--------|
-| Backend API | Python + FastAPI | Native to security tooling ecosystem |
-| Frontend | React + TypeScript | Best for recreating complex portals |
-| Database | PostgreSQL | Reliable relational store for incidents/users |
-| Cache / Streaming | Redis | Real-time alert simulation |
-| KQL Engine | Custom Python parser | Lightweight, extensible |
-| Container | Docker + Compose | One-command setup |
-
----
-
-## 🧑‍💻 Contributing
-
-We welcome contributions of all kinds! Whether you're fixing bugs, adding scenarios, improving the UI, or writing documentation — you're helping the next generation of security professionals.
-
-### Ways to Contribute
-- 🐛 **Bug reports** — Open an issue with the `bug` label
-- 💡 **Feature requests** — Open an issue with the `enhancement` label
-- 🎭 **New attack scenarios** — See `scenarios/CONTRIBUTING.md`
-- 🔍 **KQL challenges** — Add new query exercises
-- 🌐 **UI improvements** — Make it look more like the real portals
-
-### Getting Started (Dev)
-
+### 2. Start the backend
 ```bash
-# Backend
 cd backend
-python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
+```
 
-# Frontend
+Backend runs at: http://127.0.0.1:8000
+API docs at: http://127.0.0.1:8000/docs
+
+### 3. Start the frontend
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+Frontend runs at: http://localhost:5173
+
+### 4. Log in with a demo account
+
+| Email | Password | Role |
+|-------|----------|------|
+| analyst@contoso.com | SOCtraining1! | SOC Analyst (L1) |
+| senior@contoso.com | SOCtraining2! | Senior Analyst (L2) |
+| admin@contoso.com | SOCtraining3! | Administrator |
 
 ---
 
-## 📖 Documentation
+## 🗺️ Roadmap
 
-| Doc | Description |
-|-----|-------------|
-| [Architecture Guide](docs/ARCHITECTURE.md) | Deep dive into system design |
-| [KQL Engine](docs/KQL_ENGINE.md) | How the query engine works |
-| [Scenario Format](docs/SCENARIO_FORMAT.md) | How to write attack scenarios |
-| [Lab Design Guide](docs/LAB_DESIGN.md) | How to create guided labs |
-| [API Reference](docs/API.md) | Backend API documentation |
+- [ ] Persistent data with SQLite
+- [ ] Export incident report to PDF
+- [ ] Leaderboard and progress tracking
+- [ ] Docker one-command setup
+- [ ] 5 more attack scenarios
+- [ ] Mobile-responsive layout
+- [ ] Guided SC-200 study tracks
 
 ---
 
-## 🛡️ Disclaimer
+## 🤝 Contributing
 
-This project is for **educational purposes only**. All attack scenarios and telemetry are entirely synthetic. No real credentials, systems, or networks are used or targeted. The simulator is not affiliated with or endorsed by Microsoft.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+Areas where help is especially welcome:
+- New attack scenarios (YAML format documented in [docs/SCENARIO_FORMAT.md](docs/SCENARIO_FORMAT.md))
+- Additional KQL challenges
+- Bug fixes and UI improvements
+- Documentation and translations
 
 ---
 
@@ -186,10 +143,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-## ⭐ Star This Repo
+## ⚠️ Disclaimer
 
-If this project helped you, please give it a star. It helps others find it and motivates continued development!
-
----
-
-*Built with ❤️ for the cybersecurity community*
+This is a training simulator. All data is synthetic and randomly generated. This tool is not connected to any real Microsoft services, tenants, or infrastructure.
